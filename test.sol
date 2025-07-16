@@ -1,6 +1,6 @@
 // Copyright SECURRENCY INC.
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.7.0 <0.9.0;
+pragma solidity 0.8.26;
 
     ///             ///
     ///    Task 1   ///
@@ -206,4 +206,14 @@ contract StackOverflow {
         // skip implementation
     }
 }
+
+/**
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ */
 
