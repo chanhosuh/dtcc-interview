@@ -128,12 +128,13 @@ contract StackOverflow {
         address settlementCurrency;
     }
 
-    struct Stuff {
-        bytes32 marketObjectCodeRateReset;
-        int notionalPrincipal;
+    struct Interest {
         int nominalInterestRate;
         int accruedInterest;
         int rateMultiplier;
+    }
+
+    struct Date {
         uint contractDealDate;
         uint statusDate;
         uint initialExchangeDate;
@@ -147,56 +148,46 @@ contract StackOverflow {
     }
 
     function createAssetDetails(
-        // address currency,
-        // address settlementCurrency,
         Currency memory currency,
-        Stuff memory stuff
+        bytes32 marketObjectCodeRateReset,
+        int notionalPrincipal,
+        Interest memory interest,
+        Date memory date
     )
         external
     {
         require(currency.currency != address(0x00), "Invalid currency address");
         require(currency.settlementCurrency != address(0x00), "Invalid settlement currency address");
-        require(stuff.marketObjectCodeRateReset != bytes32(0x00), "Code rate request is required");
-        require(stuff.notionalPrincipal != 0, "notionalPrincipalnotionalPrincipal can't be empty");
-        require(stuff.nominalInterestRate != 0, "nominalInterestRate can't be empty");
-        require(stuff.accruedInterest != 0, "accruedInterest can't be empty");
-        require(stuff.rateMultiplier != 0, "rateMultiplier can't be empty");
-        require(stuff.contractDealDate != 0, "Contract deal date can't be empty");
-        require(stuff.statusDate != 0, "statusDate can't be empty");
-        require(stuff.initialExchangeDate != 0, "initialExchangeDate can't be empty");
-        require(stuff.maturityDate != 0, "maturityDate can't be empty");
-        require(stuff.purchaseDate != 0, "purchaseDate can't be empty");
-        require(stuff.capitalizationEndDate != 0, "capitalizationEndDate can't be empty");
-        require(stuff.cycleAnchorDateOfInterestPayment != 0, "cycleAnchorDateOfInterestPayment can't be empty");
-        require(stuff.cycleAnchorDateOfScalingIndex != 0, "cycleAnchorDateOfScalingIndex can't be empty");
-        require(stuff.cycleAnchorDateOfFee != 0, "cycleAnchorDateOfFee can't be empty");
+        require(marketObjectCodeRateReset != bytes32(0x00), "Code rate request is required");
+        require(notionalPrincipal != 0, "notionalPrincipalnotionalPrincipal can't be empty");
+        require(interest.nominalInterestRate != 0, "nominalInterestRate can't be empty");
+        require(interest.accruedInterest != 0, "accruedInterest can't be empty");
+        require(interest.rateMultiplier != 0, "rateMultiplier can't be empty");
+        require(date.contractDealDate != 0, "Contract deal date can't be empty");
+        require(date.statusDate != 0, "statusDate can't be empty");
+        require(date.initialExchangeDate != 0, "initialExchangeDate can't be empty");
+        require(date.maturityDate != 0, "maturityDate can't be empty");
+        require(date.purchaseDate != 0, "purchaseDate can't be empty");
+        require(date.capitalizationEndDate != 0, "capitalizationEndDate can't be empty");
+        require(date.cycleAnchorDateOfInterestPayment != 0, "cycleAnchorDateOfInterestPayment can't be empty");
+        require(date.cycleAnchorDateOfScalingIndex != 0, "cycleAnchorDateOfScalingIndex can't be empty");
+        require(date.cycleAnchorDateOfFee != 0, "cycleAnchorDateOfFee can't be empty");
         
         saveDetailsToStorage(
             currency,
-            stuff
+            marketObjectCodeRateReset,
+            notionalPrincipal,
+            interest,
+            date
         );
     }
     
     function saveDetailsToStorage(
-        // address currency,
-        // address settlementCurrency,
-        // bytes32 marketObjectCodeRateReset,
-        // int notionalPrincipal,
-        // int nominalInterestRate,
-        // int accruedInterest,
-        // int rateMultiplier, 
-        // uint contractDealDate,
-        // uint statusDate,
-        // uint initialExchangeDate,
-        // uint maturityDate,
-        // uint purchaseDate,
-        // uint capitalizationEndDate,
-        // uint cycleAnchorDateOfInterestPayment,
-        // uint cycleAnchorDateOfRateReset,
-        // uint cycleAnchorDateOfScalingIndex,
-        // uint cycleAnchorDateOfFee
         Currency memory currency,
-        Stuff memory stuff
+        bytes32 marketObjectCodeRateReset,
+        int notionalPrincipal,
+        Interest memory interest,
+        Date memory date
     )
         internal
     {
