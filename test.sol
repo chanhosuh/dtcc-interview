@@ -33,7 +33,7 @@ contract StringMatch {
  * All other modifications are allowed.
  **/
 contract InvestorRegistration {
-    uint public investmentRound = 1;
+    uint256 public investmentRound = 1;
 
     mapping(uint => InvestorDetails) private roundToDetails;
 
@@ -45,6 +45,8 @@ contract InvestorRegistration {
         bool verificationStatus;
         bool USResident;
     }
+
+    event LeadInvestorSet(uint256 indexed round, address indexed investor, uint64 deposit);
 
     error InvalidAddress();
     error NonPositiveDeposit(uint64 deposit);
@@ -92,6 +94,8 @@ contract InvestorRegistration {
         roundToDetails[investmentRound] = details;
         
         investmentRound++;
+
+        emit LeadInvestorSet(investmentRound, investor, depositAmount);
     }
     
     /**
