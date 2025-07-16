@@ -67,8 +67,11 @@ contract InvestorRegistration {
         external
     {
         require(investor != address(0x00), "Invalid investor address");
-        require(depositAmount > 0, "A deposint amount should be more than zero");
-        require(age > 18, "The investor should be adult");
+        require(depositAmount > 0, "Deposit amount must be greater than zero.");
+        require(age > 18, "Investor must be older than 18.");
+        require(kycStatus, "Investor must be KYC-ed.");
+        require(isVerifiedInvestor, "Investor must be verified.");
+        require(isUSResident, "Investor must be US resident.");
 
         InvestorDetails memory details = InvestorDetails(
             investor,
