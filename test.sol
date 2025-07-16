@@ -35,8 +35,7 @@ contract StringMatch {
 contract InvestorRegistration {
     uint public investmentRound = 1;
 
-    //InvestorDetails public investorsDetails;
-    mapping(uint => InvestorDetails) roundToDetails;
+    mapping(uint => InvestorDetails) private roundToDetails;
 
     struct InvestorDetails {
         address investor;
@@ -87,31 +86,16 @@ contract InvestorRegistration {
     
     /**
      * @notice Returns a lead investor details
+     * @dev we can get a free getter by making `roundToDetails` public
+     *      but encapsulation is not a bad idea, esp when we foresee
+     *      further work or upgradability being added.
      **/
-    function getInvestorDetailsByInvestmentRound(
-        uint round
-    )
+    function getInvestorDetailsByInvestmentRound(uint round)
         external
         view
-        returns (
-            address investor,
-            uint64 depositAmount,
-            uint8 age,
-            bool kycStatus,
-            bool isVerifiedInverstor,
-            bool isUSResident
-        )
+        returns (InvestorDetails memory)
     {
-        InvestorDetails memory investorDetails = roundToDetails[round];
-
-        return (
-            investorDetails.investor,
-            investorDetails.deposit,
-            investorDetails.investorsAge,
-            investorDetails.kyc,
-            investorDetails.verificationStatus,
-            investorDetails.USResident
-        );
+        return roundToDetails[round];
     }
 }
 
