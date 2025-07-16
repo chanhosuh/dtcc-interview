@@ -35,6 +35,9 @@ contract StringMatch {
 contract InvestorRegistration {
     uint256 public investmentRound = 1;
 
+    address public owner;
+    address public newOwner;
+
     mapping(uint => InvestorDetails) private roundToDetails;
 
     struct InvestorDetails {
@@ -48,12 +51,41 @@ contract InvestorRegistration {
 
     event LeadInvestorSet(uint256 indexed round, address indexed investor, uint64 deposit);
 
+    error Unauthorized();
     error InvalidAddress();
     error NonPositiveDeposit(uint64 deposit);
     error InvestorNotAdult(uint8 age);
     error InvestorNotKyc();
     error InvestorNotVerified();
     error InvestorNotUsResident();
+
+    constructor() {
+        owner = msg.sender;
+    }
+
+    modifier onlyOwner {
+        require(owner == msg.sender, Unauthorized());
+        _;
+    }
+
+    /**
+     * @notice access control functions
+     *
+     *         This ownership transfer scheme is safer than what
+     *         is typically used as it allows the original owner
+     *         to recover control if the new address is incorrect.
+     *
+     *  @param _newOwner The new controller of the contract.
+     */
+    function transferOwnership(address _newOwner) external onlyOwner {
+        newOwner = _newOwner;
+    }
+
+    function acceptOwnership() external {
+        require(newOwner == msg.sender, Unauthorized());
+        owner = newOwner;
+        newOwner = address(0);
+    }
     
     /**
      * @notice Lead investor registration
@@ -73,7 +105,7 @@ contract InvestorRegistration {
         bool isVerifiedInvestor,
         bool isUSResident
     )
-        external
+        external onlyOwner
     {
         require(investor != address(0x00), InvalidAddress());
         require(depositAmount > 0, NonPositiveDeposit(depositAmount));
