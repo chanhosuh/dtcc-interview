@@ -45,6 +45,13 @@ contract InvestorRegistration {
         bool verificationStatus;
         bool USResident;
     }
+
+    error InvalidAddress();
+    error NonPositiveDeposit(uint64 deposit);
+    error InvestorNotAdult(uint8 age);
+    error InvestorNotKyc();
+    error InvestorNotVerified();
+    error InvestorNotUsResident();
     
     /**
      * @notice Lead investor registration
@@ -66,12 +73,12 @@ contract InvestorRegistration {
     )
         external
     {
-        require(investor != address(0x00), "Invalid investor address");
-        require(depositAmount > 0, "Deposit amount must be greater than zero.");
-        require(age > 18, "Investor must be older than 18.");
-        require(kycStatus, "Investor must be KYC-ed.");
-        require(isVerifiedInvestor, "Investor must be verified.");
-        require(isUSResident, "Investor must be US resident.");
+        require(investor != address(0x00), InvalidAddress());
+        require(depositAmount > 0, NonPositiveDeposit(depositAmount));
+        require(age > 18, InvestorNotAdult(age));
+        require(kycStatus, InvestorNotKyc());
+        require(isVerifiedInvestor, InvestorNotVerified());
+        require(isUSResident, InvestorNotUsResident());
 
         InvestorDetails memory details = InvestorDetails(
             investor,
