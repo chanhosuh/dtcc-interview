@@ -33,12 +33,6 @@ contract StringMatch {
  * All other modifications are allowed.
  **/
 contract InvestorRegistration {
-    uint256 public investmentRound = 1;
-
-    address public owner;
-    address public newOwner;
-
-    mapping(uint => InvestorDetails) private roundToDetails;
 
     struct InvestorDetails {
         address investor;
@@ -49,10 +43,30 @@ contract InvestorRegistration {
         bool USResident;
     }
 
-    event LeadInvestorSet(uint256 indexed round, address indexed investor, uint64 deposit);
+    struct RoundInfo {
+        InvestorDetails details;
+        uint40 maturity;
+        uint40 lastAccrued;
+        uint32 rateBps;
+    }
 
+    // these bounds ensure our calcs don't revert and
+    // the results are the right size
+    uint256 constant MAX_RATE_BPS = 100_000; // 1000%
+    uint256 constant MAX_TIME_DELTA = 10 * 365 days;
+
+    uint256 public investmentRound = 1;
+
+    address public owner;
+    address public newOwner;
+
+    mapping(uint256 => InvestorDetails) private _roundToDetails;
+    mapping(uint256 => RoundInfo) private _rounds;
+
+    event LeadInvestorSet(uint256 indexed round, address indexed investor, uint64 deposit);
     event OwnershipTransferred(address oldOwner, address newOwner);
     event OwnershipAccepted(address owner);
+    event InterestAccrued(uint256 round, uint256 interest);
 
     error Unauthorized();
     error InvalidAddress();
@@ -61,6 +75,7 @@ contract InvestorRegistration {
     error InvestorNotKyc();
     error InvestorNotVerified();
     error InvestorNotUsResident();
+    error InterestOverflow();
 
     constructor() {
         owner = msg.sender;
@@ -128,7 +143,7 @@ contract InvestorRegistration {
             isUSResident
         );
 
-        roundToDetails[investmentRound] = details;
+        _roundToDetails[investmentRound] = details;
         
         investmentRound++;
 
@@ -146,7 +161,38 @@ contract InvestorRegistration {
         view
         returns (InvestorDetails memory)
     {
-        return roundToDetails[round];
+        return _roundToDetails[round];
+    }
+
+    function setRate(uint256 round, uint32 rateBps, uint40 maturity) external onlyOwner {
+        require(rateBps < MAX_RATE_BPS, "Rate is too high");
+        require(maturity > block.timestamp, "Maturity must be in the future");
+        require(maturity - block.timestamp < MAX_TIME_DELTA, "Maturity is too far in the future");
+        _accrueInterest(round);
+        _rounds[round].rateBps = rateBps;
+        _rounds[round].maturity = maturity;
+    }
+
+    function accrueInterest(uint256 round) external {
+        _accrueInterest(round);
+    }
+
+    function _accrueInterest(uint256 round) internal {
+        RoundInfo storage r = _rounds[round];
+
+        uint256 end = block.timestamp < r.maturity ? block.timestamp : r.maturity;
+        uint256 dt = end - r.lastAccrued;
+        if (dt == 0) return;
+
+        // numerator will never cause an overflow revert
+        // due to our explicit caps;
+        // interest will also be much smaller than type(uint64).max
+        uint256 interest = r.details.deposit * r.rateBps * dt / 10_000 / (365 days);
+        uint64 total = r.details.deposit + uint64(interest);
+        r.details.deposit = uint64(total);
+        r.lastAccrued = uint40(end);
+
+        emit InterestAccrued(round, interest);
     }
 }
 
