@@ -51,6 +51,9 @@ contract InvestorRegistration {
 
     event LeadInvestorSet(uint256 indexed round, address indexed investor, uint64 deposit);
 
+    event OwnershipTransferred(address oldOwner, address newOwner);
+    event OwnershipAccepted(address owner);
+
     error Unauthorized();
     error InvalidAddress();
     error NonPositiveDeposit(uint64 deposit);
@@ -79,12 +82,14 @@ contract InvestorRegistration {
      */
     function transferOwnership(address _newOwner) external onlyOwner {
         newOwner = _newOwner;
+        emit OwnershipTransferred(owner, newOwner);
     }
 
     function acceptOwnership() external {
         require(newOwner == msg.sender, Unauthorized());
         owner = newOwner;
         newOwner = address(0);
+        emit OwnershipAccepted(owner);
     }
     
     /**
